@@ -22,6 +22,8 @@ const followChain = (maps, start) => {
   return next;
 };
 
+// --- Part One ---
+
 let lowest;
 for (const seed of seeds) {
   const loc = followChain(maps, seed);
@@ -29,3 +31,21 @@ for (const seed of seeds) {
 }
 
 console.log(lowest);
+
+// --- Part Two ---
+
+const seedRanges = [];
+for (let i = 0; i < seeds.length; i += 2) {
+  seedRanges.push({ min: seeds[i], max: seeds[i] + seeds[i+1] });
+}
+
+const reversedMaps = maps.reverse()
+  .map(m => m.map(rule => [ rule[1], rule[0], rule[2] ]));
+
+let lowestest = 0;
+while (++lowestest) {
+  const seed = followChain(reversedMaps, lowestest);
+  if (seedRanges.some(r => seed >= r.min && seed < r.max)) break;
+}
+
+console.log(lowestest);
