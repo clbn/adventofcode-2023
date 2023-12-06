@@ -11,8 +11,17 @@ const getWays = (time, distance) => {
   return c;
 };
 
+// --- Part One ---
+
 let product = 1;
 for (const i in times) {
   product *= getWays(times[i], distances[i]);
 }
 console.log(product);
+
+// --- Part Two ---
+
+const time = +times.reduce((acc, t) => acc + t, '');
+const distance = +distances.reduce((acc, t) => acc + t, '');
+const ways = getWays(time, distance);
+console.log(ways);
