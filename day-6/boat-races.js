@@ -3,12 +3,12 @@ const data = fs.readFileSync('input.txt', { encoding: 'utf8' });
 const [times, distances] = data.trim().split(/\r?\n/)
   .map(l => l.match(/\d+/g).map(n => +n));
 
-const getWays = (time, distance) => {
-  let c = 0;
-  for (let w = 0; w <= time; w++) {
-    if (w * (time - w) > distance) c++;
-  }
-  return c;
+const { ceil, floor, sqrt } = Math;
+
+const getWays = (t, d) => {
+  const l = (t - sqrt(t * t - 4 * d)) / 2;
+  const r = (t + sqrt(t * t - 4 * d)) / 2;
+  return ceil(r) - floor(l) - 1;
 };
 
 // --- Part One ---
