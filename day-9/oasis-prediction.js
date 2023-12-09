@@ -12,5 +12,12 @@ const predict = (h) => {
   return h.at(-1) + next;
 };
 
+// --- Part One ---
+
 const future = histories.reduce((acc, h) => acc + predict(h), 0);
 console.log(future);
+
+// --- Part Two ---
+
+const past = histories.reduce((acc, h) => acc + predict(h.reverse()), 0);
+console.log(past);
