@@ -6,32 +6,64 @@ const records = data.trim().split(/\r?\n/)
     return { springs, groups: groups.split(',').map(n => +n) }
   });
 
-// Is the bit set to 1 in the number
-const bit = (number, index) => (number & (1 << index)) > 0;
+const memo = (fn) => {
+  const cache = new Map();
+  return (...args) => {
+    const key = JSON.stringify(args);
+    if (!cache.has(key)) cache.set(key, fn(...args));
+    return cache.get(key);
+  };
+}
 
-const variants = (springs, groups) => {
-  const questionMarks = springs.match(/\?/g).length;
-  const max = Math.pow(2, questionMarks);
-  let matchingCombinations = 0;
-
-  for (let c = 0; c < max; c++) {
-    let variant = [];
-    for (let i = 0, q = 0, g = -1, prev = '.'; i < springs.length; i++) {
-      const next = springs[i] === '?' ? (bit(c, q++) ? '#' : '.') : springs[i];
-      if (prev === '.' && next === '#') variant[++g] = 0;
-      if (next === '#') variant[g]++;
-      prev = next;
-    }
-    if (variant.length === groups.length && groups.every((v, i) => v === variant[i])) {
-      matchingCombinations++;
-    }
+const variants = memo((springs, groups) => {
+  // Out of springs
+  if (!springs.length) {
+    if (!groups.length) return 1;
+    return 0;
   }
 
-  return matchingCombinations;
-};
+  // Out of groups
+  if (!groups.length) {
+    if (!springs.match(/#/)) return 1;
+    return 0;
+  }
+
+  // Not enough springs for groups
+  if (springs.length < groups.reduce((acc, v) => acc + v + 1)) {
+    return 0;
+  }
+
+  // Go deeper with '.'
+  if (springs[0] === '.') {
+    return variants(springs.slice(1), groups);
+  }
+
+  // Go deeper with '#'
+  if (springs[0] === '#') {
+    const [group, ...rest] = groups;
+    if (springs.slice(0, group).match(/\./)) return 0;
+    if (springs[group] === "#") return 0;
+    return variants(springs.slice(group + 1), rest);
+  }
+
+  // Go deeper with '?'
+  return variants('#' + springs.slice(1), groups) + variants('.' + springs.slice(1), groups);
+});
+
+// --- Part One ---
 
 const sum = records.reduce((acc, { springs, groups }) => {
   return acc + variants(springs, groups);
 }, 0);
 
 console.log(sum);
+
+// --- Part Two ---
+
+const unfolded = records.reduce((acc, { springs, groups }) => {
+  springs += `?${springs}?${springs}?${springs}?${springs}`;
+  groups = groups.concat(groups, groups, groups, groups);
+  return acc + variants(springs, groups);
+}, 0);
+
+console.log(unfolded);
