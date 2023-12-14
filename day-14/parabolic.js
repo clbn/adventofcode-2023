@@ -30,6 +30,10 @@ const rollNorth = (p) => {
   return p;
 };
 
+const rollSouth = (p) => rollNorth(p.reverse()).reverse();
+const rollWest = (p) => p.map(row => roll(row));
+const rollEast = (p) => p.map(row => roll(row.reverse()).reverse());
+
 const sumLoad = (p) => {
   let sum = 0;
   for (let y = 0; y < size; y++) {
@@ -40,6 +44,36 @@ const sumLoad = (p) => {
   return sum;
 };
 
+// --- Part One ---
+
 const rolled = rollNorth(platform);
 const sum = sumLoad(rolled);
 console.log(sum);
+
+// --- Part Two ---
+
+let p = platform;
+const cache = [];
+let first, second, milestone;
+for (let i = 0; i < 500; i++) {
+  const key = JSON.stringify(p);
+  if (!first) {
+    if (cache.includes(key)) { first = i; milestone = key; }
+  } else if (!second) {
+    if (key === milestone) { second = i; break; }
+  }
+  p = rollNorth(p);
+  p = rollWest(p);
+  p = rollSouth(p);
+  p = rollEast(p);
+  cache.push(key);
+}
+
+// 1_000_000_000 = head + period * N + tail
+const period = second - first;
+const head = first - period;
+const tail = (1_000_000_000 - head) % period;
+p = JSON.parse(cache[head + tail]);
+
+const sum2 = sumLoad(p);
+console.log(sum2);
