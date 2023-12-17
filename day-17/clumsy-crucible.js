@@ -11,7 +11,7 @@ const MinHeap = {siftDown(h,i=0,v=h[i]){if(i<h.length){let k=v[0];while(1){let j
 const directions = [[0, -1], [1, 0], [0, 1], [-1, 0]];
 const distance = (ax, ay, bx, by) => Math.abs(ax - bx) + Math.abs(ay - by);
 
-const getLoss = () => {
+const getLoss = (part) => {
   const visited = new Map();
   const queue = [
     [0, { x: 0, y: 0, dx: 1, dy: 0, len: 0, heat: 0 }], // move right
@@ -19,7 +19,10 @@ const getLoss = () => {
   ];
   while (queue.length) {
     const [, cur] = MinHeap.pop(queue);
-    if (cur.x === width-1 && cur.y === height-1) return cur.heat;
+    if (cur.x === width-1 && cur.y === height-1) {
+      if (part === 1) return cur.heat;
+      if (part === 2 && cur.len > 3 && cur.len < 11) return cur.heat;
+    }
 
     for (const [dx, dy] of directions) {
       if (!cur.dx && cur.dy === -dy) continue;
@@ -30,7 +33,8 @@ const getLoss = () => {
       if (!map[y]?.[x]) continue;
 
       const len = (dx === cur.dx && dy === cur.dy) ? cur.len + 1 : 1;
-      if (len > 3) continue;
+      if (part === 1 && len > 3) continue;
+      if (part === 2 && ((len <= cur.len && cur.len < 4) || len > 10)) continue;
 
       const heat = cur.heat + map[y][x];
 
@@ -44,5 +48,12 @@ const getLoss = () => {
   }
 };
 
-const loss = getLoss();
+// --- Part One ---
+
+const loss = getLoss(1);
 console.log(loss);
+
+// --- Part Two ---
+
+const ultraLoss = getLoss(2);
+console.log(ultraLoss);
