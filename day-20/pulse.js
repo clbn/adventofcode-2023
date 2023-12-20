@@ -13,14 +13,17 @@ const modules = data.trim().split(/\r?\n/)
     return acc;
   }, {});
 
-for (const m of Object.values(modules)) {
-  for (const d of m.dest) {
-    if (modules[d]?.type === '&') modules[d].inputs[m.name] = false;
+const setInitialStates = () => {
+  for (const m of Object.values(modules)) {
+    m.flip = false;
+    for (const d of m.dest) {
+      if (modules[d]?.type === '&') modules[d].inputs[m.name] = false;
+    }
   }
-}
+};
 
-const pushButton = (times) => {
-  const start = ['button', false, 'broadcaster'];
+const pushButton = (times, start, exits = []) => {
+  setInitialStates();
   let lows = 0, highs = 0;
 
   for (let i = 1; i <= times; i++) {
@@ -29,7 +32,8 @@ const pushButton = (times) => {
     while (queue.length > 0) {
       const [src, pulse, name] = queue.shift();
 
-      if (pulse) highs++; else lows++;
+      if (pulse) highs++; else lows++; // Part One
+      if (pulse === false && exits.includes(name)) return i; // Part Two
 
       const module = modules[name];
       if (!module) continue;
@@ -53,8 +57,22 @@ const pushButton = (times) => {
       }
     }
   }
-  return lows * highs;
+  return lows * highs; // Part One
 }
 
-const pulses = pushButton(1000);
+// --- Part One ---
+
+const pulses = pushButton(1000, ['button', false, 'broadcaster']);
 console.log(pulses);
+
+// --- Part Two ---
+
+const entrances = modules['broadcaster'].dest;
+const gate = Object.values(modules).find(m => m.dest[0] === 'rx').name;
+const exits = Object.values(modules).filter(m => m.dest[0] === gate).map(m => m.name);
+
+let lcm = 1;
+for (const e of entrances) {
+  lcm *= pushButton(10000, ['broadcaster', false, e], exits);
+}
+console.log(lcm);
